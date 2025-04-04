@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import tempfile
@@ -13,43 +13,42 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 app = FastAPI()
 
-# Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can restrict to your vercel link
+    allow_origins=["*"],  # Change this to your frontend URL in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
 @app.post("/process_audio/")
-async def process_audio(file: UploadFile = File(...)):
+async def process_audio(file: UploadFile = File(...), language: str = Form("en-US")):
     # Save uploaded file
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp:
         temp.write(await file.read())
         temp_path = temp.name
 
-    # Convert MP3 to WAV
+    # Convert webm to wav
     audio = AudioSegment.from_file(temp_path, format="webm")
-    wav_path = temp_path.replace(".mp3", ".wav")
+    wav_path = temp_path.replace(".webm", ".wav")
     audio.export(wav_path, format="wav")
-    print(f"Received audio at: {temp_path}")
-    print(f"Converting to WAV: {wav_path}")
 
-    # Transcribe audio
+    # Transcribe using Google Speech Recognition
     recognizer = sr.Recognizer()
     with sr.AudioFile(wav_path) as source:
         audio_data = recognizer.record(source)
         try:
-            text = recognizer.recognize_google(audio_data)
+            text = recognizer.recognize_google(audio_data, language=language)
         except sr.UnknownValueError:
-            return {"response": "Sorry, I couldn't understand."}
+            return {"response": "Sorry, I couldn't understand.", "transcription": ""}
         except sr.RequestError as e:
-            return {"response": f"Speech Recognition error: {e}"}
+            return {"response": f"Speech Recognition error: {e}", "transcription": ""}
 
-    # Generate response with Gemini
+    # Generate response using Gemini
     model = genai.GenerativeModel("gemini-2.0-flash")
     response = model.generate_content(text)
 
-    return {"response": response.text}
+    return {
+        "transcription": text,
+        "response": response.text
+    }
