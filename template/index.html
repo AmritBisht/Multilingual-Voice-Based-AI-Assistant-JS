@@ -116,13 +116,6 @@
       }
     }
 
-    audio, a {
-      margin-top: 15px;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
     @media (max-width: 600px) {
       .message {
         max-width: 90%;
@@ -148,8 +141,6 @@
 <div id="recordSection">
   <button id="recordBtn" onclick="startRecording()">🎤 Start Talking</button>
   <div class="wave" id="waveAnim"></div>
-  <audio id="audioPlayer" controls style="display: none;"></audio>
-  <a id="downloadLink" style="display:none;" download="recording.webm">⬇️ Download Your Voice</a>
 </div>
 
 <script>
@@ -174,13 +165,6 @@ async function startRecording() {
     document.getElementById("waveAnim").style.display = "none";
 
     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-    const audioURL = URL.createObjectURL(audioBlob);
-    document.getElementById("audioPlayer").src = audioURL;
-    document.getElementById("audioPlayer").style.display = "block";
-
-    const downloadLink = document.getElementById("downloadLink");
-    downloadLink.href = audioURL;
-    downloadLink.style.display = "block";
 
     const formData = new FormData();
     formData.append("file", audioBlob, "recording.webm");
