@@ -11,8 +11,6 @@
   <a id="downloadLink" style="display:none" download="recording.webm">Download Recording</a>
 
 <script>
-<script>
-    
 let mediaRecorder;
 let audioChunks = [];
 
@@ -54,7 +52,11 @@ async function startRecording() {
     }
 
     audioChunks = [];
-};
+  };
+
+  mediaRecorder.start();
+  setTimeout(() => mediaRecorder.stop(), 5000); // Record for 5 seconds
+}
 
 </script>
 </body>
