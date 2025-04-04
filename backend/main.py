@@ -45,7 +45,7 @@ async def process_audio(file: UploadFile = File(...)):
             return {"response": f"Speech Recognition error: {e}"}
 
     # Generate response with Gemini
-    model = genai.GenerativeModel("gemini-pro")
+    model = genai.GenerativeModel("gemini-2.0-flash")
     response = model.generate_content(text)
 
     return {"response": response.text}
