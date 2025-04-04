@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Voice AI Assistant</title>
+  <title>Voice AI Assistant (Debug Mode)</title>
 </head>
 <body>
   <h2>🎙️ Talk to AI</h2>
   <button onclick="startRecording()">Start Talking</button>
   <p id="response"></p>
+  <audio id="audioPlayer" controls></audio> <!-- Audio player for playback -->
+  <a id="downloadLink" style="display:none" download="recording.webm">Download Recording</a>
 
 <script>
 let mediaRecorder;
@@ -15,33 +17,41 @@ let audioChunks = [];
 async function startRecording() {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   mediaRecorder = new MediaRecorder(stream);
-  mediaRecorder.start();
+  audioChunks = [];
 
   mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-  mediaRecorder.onstop = async () => {
-    const formData = new FormData();
-    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); // Not 'audio/mp3'
-    formData.append("file", audioBlob, "recording.webm"); // Not 'recording.mp3'
+  mediaRecorder.start();
 
-    const res = await fetch("https://multilingual-voice-based-ai-assistant-js.onrender.com/process_audio/", {
-        method: "POST",
-        body: formData
-    });
-
-
-    const data = await res.json();
-    document.getElementById("response").innerText = data.response;
-    speakText(data.response);
-    audioChunks = [];
-  };
-
-  setTimeout(() => mediaRecorder.stop(), 5000); // Record for 5 sec
+  setTimeout(() => {
+    mediaRecorder.stop();
+  }, 5000); // Record for 5 seconds
 }
 
-function speakText(text) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  speechSynthesis.speak(utterance);
-}
+mediaRecorder?.addEventListener("stop", async () => {
+  const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+  // 🔊 Play back the recorded audio
+  const audioURL = URL.createObjectURL(audioBlob);
+  document.getElementById("audioPlayer").src = audioURL;
+
+  // ⬇️ Provide a download link
+  const downloadLink = document.getElementById("downloadLink");
+  downloadLink.href = audioURL;
+  downloadLink.style.display = "block";
+  downloadLink.innerText = "Download Recorded Audio";
+
+  // 🎤 Send to backend for testing
+  const formData = new FormData();
+  formData.append("file", audioBlob, "recording.webm");
+
+  const res = await fetch("https://multilingual-voice-based-ai-assistant-js.onrender.com/process_audio/", {
+    method: "POST",
+    body: formData
+  });
+
+  const data = await res.json();
+  document.getElementById("response").innerText = data.response;
+});
 </script>
 </body>
 </html>
