@@ -19,9 +19,9 @@ async function startRecording() {
 
   mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
   mediaRecorder.onstop = async () => {
-    const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
     const formData = new FormData();
-    formData.append("file", audioBlob, "recording.mp3");
+    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); // Not 'audio/mp3'
+    formData.append("file", audioBlob, "recording.webm"); // Not 'recording.mp3'
 
     const res = await fetch("https://multilingual-voice-based-ai-assistant-js.onrender.com/process_audio/", {
         method: "POST",

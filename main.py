@@ -31,9 +31,11 @@ async def process_audio(file: UploadFile = File(...)):
         temp_path = temp.name
 
     # Convert MP3 to WAV
-    audio = AudioSegment.from_file(temp_path)
+    audio = AudioSegment.from_file(temp_path, format="webm")
     wav_path = temp_path.replace(".mp3", ".wav")
     audio.export(wav_path, format="wav")
+    print(f"Received audio at: {temp_path}")
+    print(f"Converting to WAV: {wav_path}")
 
     # Transcribe audio
     recognizer = sr.Recognizer()
