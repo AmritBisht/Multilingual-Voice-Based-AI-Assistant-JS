@@ -12,6 +12,7 @@
 
 <script>
 <script>
+    
 let mediaRecorder;
 let audioChunks = [];
 
@@ -53,38 +54,8 @@ async function startRecording() {
     }
 
     audioChunks = [];
-  };
+};
 
-  mediaRecorder.start();
-  setTimeout(() => mediaRecorder.stop(), 5000); // Record for 5 seconds
-}
-</script>
-
-mediaRecorder?.addEventListener("stop", async () => {
-  const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-
-  // 🔊 Play back the recorded audio
-  const audioURL = URL.createObjectURL(audioBlob);
-  document.getElementById("audioPlayer").src = audioURL;
-
-  // ⬇️ Provide a download link
-  const downloadLink = document.getElementById("downloadLink");
-  downloadLink.href = audioURL;
-  downloadLink.style.display = "block";
-  downloadLink.innerText = "Download Recorded Audio";
-
-  // 🎤 Send to backend for testing
-  const formData = new FormData();
-  formData.append("file", audioBlob, "recording.webm");
-
-  const res = await fetch("https://multilingual-voice-based-ai-assistant-js.onrender.com/process_audio/", {
-    method: "POST",
-    body: formData
-  });
-
-  const data = await res.json();
-  document.getElementById("response").innerText = data.response;
-});
 </script>
 </body>
 </html>
