@@ -7,9 +7,8 @@ from pydub import AudioSegment
 import speech_recognition as sr
 import google.generativeai as genai
 
-# Load .env
-load_dotenv()
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
 app = FastAPI()
 
