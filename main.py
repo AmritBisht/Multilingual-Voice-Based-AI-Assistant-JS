@@ -13,9 +13,14 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 app = FastAPI()
 
+origins = [
+    "https://multilingual-voice-based-ai-assistant-js.vercel.app",
+    "http://localhost:3000"  # Optional, for local dev
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change this to your frontend URL in production
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
