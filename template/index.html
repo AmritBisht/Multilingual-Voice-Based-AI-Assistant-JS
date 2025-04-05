@@ -80,6 +80,8 @@
 </header>
 
 <div id="chat"></div>
+  
+<div id="statusMessage" style="text-align:center; margin-top: 10px; font-weight: bold; color: #555;"></div>
 
 <div id="controls">
   <select id="langSelect">
@@ -93,6 +95,8 @@
   <button id="stopBtn" onclick="stopRecording()" disabled>🛑 Stop</button>
 </div>
 
+
+  
 <script>
 let mediaRecorder;
 let audioChunks = [];
@@ -106,12 +110,16 @@ async function startRecording() {
   document.getElementById("startBtn").disabled = true;
   document.getElementById("stopBtn").disabled = false;
 
+  showStatus("🎙️ Listening...");
+
   mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
 
   mediaRecorder.onstop = async () => {
     clearTimeout(stopTimeout);
     document.getElementById("startBtn").disabled = false;
     document.getElementById("stopBtn").disabled = true;
+
+    showStatus("🤖 Processing...");
 
     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
     const formData = new FormData();
@@ -127,6 +135,8 @@ async function startRecording() {
 
     const data = await response.json();
 
+    hideStatus(); // Hide once response received
+
     if (data.transcription) addMessage(data.transcription, "user");
     if (data.response) {
       addMessage(data.response, "ai");
@@ -136,7 +146,6 @@ async function startRecording() {
 
   mediaRecorder.start();
 
-  // ⏳ Auto-stop after 20s
   stopTimeout = setTimeout(() => {
     if (mediaRecorder.state !== "inactive") {
       mediaRecorder.stop();
@@ -158,6 +167,15 @@ function addMessage(text, sender) {
   msg.scrollIntoView({ behavior: "smooth" });
 }
 
+function showStatus(msg) {
+  document.getElementById("statusMessage").innerText = msg;
+}
+
+function hideStatus() {
+  document.getElementById("statusMessage").innerText = "";
+}
+  
+  
 function speakText(text, lang) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
