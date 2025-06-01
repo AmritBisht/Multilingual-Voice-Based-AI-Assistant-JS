@@ -49,7 +49,7 @@
       margin: 30px auto;
     }
 
-    #recordBtn {
+    #startBtn, #stopBtn {
       background: #ff4b5c;
       color: white;
       border: none;
@@ -57,9 +57,10 @@
       padding: 12px 24px;
       font-size: 16px;
       cursor: pointer;
+      margin: 5px;
     }
 
-    #recordBtn:disabled {
+    #startBtn:disabled, #stopBtn:disabled {
       background: #ccc;
       cursor: not-allowed;
     }
@@ -69,6 +70,13 @@
       font-size: 14px;
       margin-bottom: 10px;
       border-radius: 8px;
+    }
+
+    #statusMessage {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #555;
     }
   </style>
 </head>
@@ -81,7 +89,7 @@
 
 <div id="chat"></div>
   
-<div id="statusMessage" style="text-align:center; margin-top: 10px; font-weight: bold; color: #555;"></div>
+<div id="statusMessage"></div>
 
 <div id="controls">
   <select id="langSelect">
@@ -95,8 +103,6 @@
   <button id="stopBtn" onclick="stopRecording()" disabled>🛑 Stop</button>
 </div>
 
-
-  
 <script>
 let mediaRecorder;
 let audioChunks = [];
@@ -119,7 +125,7 @@ async function startRecording() {
     document.getElementById("startBtn").disabled = false;
     document.getElementById("stopBtn").disabled = true;
 
-    showStatus("🤖 Processing...");
+    showStatus("🤖 Transcribing...");
 
     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
     const formData = new FormData();
@@ -128,19 +134,30 @@ async function startRecording() {
     formData.append("file", audioBlob, "recording.webm");
     formData.append("language", lang);
 
-    const response = await fetch("https://multilingual-voice-based-ai-assistant-js.onrender.com/process_audio/", {
-      method: "POST",
-      body: formData
-    });
+    try {
+      const response = await fetch("https://multilingual-voice-based-ai-assistant-js.onrender.com/process_audio/", {
+        method: "POST",
+        body: formData
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    hideStatus(); // Hide once response received
+      hideStatus();
 
-    if (data.transcription) addMessage(data.transcription, "user");
-    if (data.response) {
-      addMessage(data.response, "ai");
-      speakText(data.response, lang);
+      if (data.transcription) {
+        addMessage(`🗣️ You said: ${data.transcription}`, "user");
+      } else {
+        addMessage("❗Sorry, we couldn't transcribe your speech.", "user");
+      }
+
+      if (data.response) {
+        addMessage(data.response, "ai");
+        speakText(data.response, lang);
+      }
+
+    } catch (err) {
+      console.error("Error during fetch:", err);
+      showStatus("❗ Error processing audio");
     }
   };
 
@@ -150,7 +167,7 @@ async function startRecording() {
     if (mediaRecorder.state !== "inactive") {
       mediaRecorder.stop();
     }
-  }, 20000);
+  }, 20000); // auto-stop after 20 sec
 }
 
 function stopRecording() {
@@ -174,8 +191,7 @@ function showStatus(msg) {
 function hideStatus() {
   document.getElementById("statusMessage").innerText = "";
 }
-  
-  
+
 function speakText(text, lang) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
@@ -184,17 +200,6 @@ function speakText(text, lang) {
   if (matchedVoice) utterance.voice = matchedVoice;
   speechSynthesis.speak(utterance);
 }
-mediaRecorder.onstop = async () => {
-  // Preview the audio
-  const audioURL = URL.createObjectURL(audioBlob);
-  const audio = new Audio(audioURL);
-  audio.controls = true;
-  document.body.appendChild(audio);  // Append player to page
-
-  console.log("Blob type:", audioBlob.type);
-  console.log("Blob size:", audioBlob.size);
-}
-
 </script>
 
 </body>
