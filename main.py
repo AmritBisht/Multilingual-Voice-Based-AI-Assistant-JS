@@ -53,3 +53,6 @@ async def process_audio(file: UploadFile = File(...), language: str = Form("en-U
         "transcription": text,
         "response": response.text
     }
+@app.get("/")
+def root():
+    return {"status": "Voice chatbot backend is live"}
