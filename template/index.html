@@ -184,6 +184,16 @@ function speakText(text, lang) {
   if (matchedVoice) utterance.voice = matchedVoice;
   speechSynthesis.speak(utterance);
 }
+mediaRecorder.onstop = async () => {
+  // Preview the audio
+  const audioURL = URL.createObjectURL(audioBlob);
+  const audio = new Audio(audioURL);
+  audio.controls = true;
+  document.body.appendChild(audio);  // Append player to page
+
+  console.log("Blob type:", audioBlob.type);
+  console.log("Blob size:", audioBlob.size);
+}
 
 </script>
 
