@@ -56,3 +56,14 @@ async def process_audio(file: UploadFile = File(...), language: str = Form("en-U
 @app.get("/")
 def root():
     return {"status": "Voice chatbot backend is live"}
+
+
+@app.get("/test_llm/")
+def test_llm():
+    try:
+        model = genai.GenerativeModel("gemini-2.0-flash")
+        response = model.generate_content("Say hello in three different languages.")
+        return {"response": response.text}
+    except Exception as e:
+        return {"error": str(e)}
+
