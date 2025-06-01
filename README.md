@@ -14,9 +14,9 @@ Built using:
 
 🔗 Try the live demo here : [ Click ](https://multilingual-voice-based-ai-git-4983bc-amrits-projects-1a6211f2.vercel.app)
 
-🔗 Frontend (Vercel): [https://your-vercel-app-url](https://multilingual-voice-based-ai-git-4983bc-amrits-projects-1a6211f2.vercel.app)
+🔗 Frontend (Vercel): [ Click ](https://multilingual-voice-based-ai-git-4983bc-amrits-projects-1a6211f2.vercel.app)
 
-🌐 Backend (Render): [https://your-render-app-url](https://dashboard.render.com/web/srv-cvo2vs49c44c73bhteo0/deploys/dep-cvoaid6mcj7s7380h9cg)
+🌐 Backend (Render): [ Click ](https://dashboard.render.com/web/srv-cvo2vs49c44c73bhteo0/deploys/dep-cvoaid6mcj7s7380h9cg)
 
 ---
 
