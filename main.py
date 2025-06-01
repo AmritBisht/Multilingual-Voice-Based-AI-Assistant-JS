@@ -24,35 +24,48 @@ app.add_middleware(
 
 @app.post("/process_audio/")
 async def process_audio(file: UploadFile = File(...), language: str = Form("en-US")):
-    # Save uploaded file
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp:
-        temp.write(await file.read())
-        temp_path = temp.name
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp:
+            content = await file.read()
+            temp.write(content)
+            temp_path = temp.name
 
-    # Convert webm to wav
-    audio = AudioSegment.from_file(temp_path, format="webm")
-    wav_path = temp_path.replace(".webm", ".wav")
-    audio.export(wav_path, format="wav")
+        print(f"[DEBUG] File saved to: {temp_path}, size: {len(content)} bytes")
 
-    # Transcribe using Google Speech Recognition
-    recognizer = sr.Recognizer()
-    with sr.AudioFile(wav_path) as source:
-        audio_data = recognizer.record(source)
-        try:
+        # Convert to wav
+        audio = AudioSegment.from_file(temp_path, format="webm")
+        wav_path = temp_path.replace(".webm", ".wav")
+        audio.export(wav_path, format="wav")
+        print(f"[DEBUG] Converted to WAV: {wav_path}")
+
+        recognizer = sr.Recognizer()
+        with sr.AudioFile(wav_path) as source:
+            audio_data = recognizer.record(source)
             text = recognizer.recognize_google(audio_data, language=language)
-        except sr.UnknownValueError:
-            return {"response": "Sorry, I couldn't understand.", "transcription": ""}
-        except sr.RequestError as e:
-            return {"response": f"Speech Recognition error: {e}", "transcription": ""}
 
-    # Generate response using Gemini
-    model = genai.GenerativeModel("gemini-2.0-flash")
-    response = model.generate_content(text)
+        print(f"[DEBUG] Transcription: {text}")
 
-    return {
-        "transcription": text,
-        "response": response.text
-    }
+        # Send to LLM
+        model = genai.GenerativeModel("gemini-2.0-flash")
+        response = model.generate_content(text)
+
+        return {
+            "transcription": text,
+            "response": response.text
+        }
+
+    except sr.UnknownValueError:
+        print("[ERROR] Could not understand audio.")
+        return {"response": "Sorry, I couldn't understand.", "transcription": ""}
+
+    except sr.RequestError as e:
+        print(f"[ERROR] Speech recognition service error: {e}")
+        return {"response": f"Speech Recognition error: {e}", "transcription": ""}
+
+    except Exception as e:
+        print(f"[ERROR] General error: {e}")
+        return {"response": f"Server error: {e}", "transcription": ""}
+
 @app.get("/")
 def root():
     return {"status": "Voice chatbot backend is live"}
